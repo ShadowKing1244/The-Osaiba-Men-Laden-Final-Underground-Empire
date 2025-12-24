@@ -84,16 +84,18 @@
         <div class="inventory-list" id="inventory"></div>
         <div style="margin-bottom: 10px;">ARMY PL: <span id="armyPL" style="color: var(--blue);">0</span></div>
         <button class="btn btn-special" onclick="startFusion()">🧬 FUSE WEAKEST</button>
+        <button class="btn btn-danger" style="background: #4a0000;" onclick="liquidate()">⚠️ LIQUIDATE ARMY</button>
         <button class="btn btn-danger" style="margin-top: 20px;" onclick="bribe()">👮 BRIBE ($5,000)</button>
     </div>
 </div>
 
 <script>
-    let zeni = parseInt(localStorage.getItem('zeni')) || 5000;
+    // --- STORAGE FIX ---
+    let zeni = localStorage.getItem('zeni') !== null ? parseInt(localStorage.getItem('zeni')) : 5000;
+    let army = localStorage.getItem('army') !== null ? JSON.parse(localStorage.getItem('army')) : [];
     let heat = 0;
     let ballsFound = 0;
     let luckBonus = 0;
-    let army = JSON.parse(localStorage.getItem('army')) || [];
     let currentSprout = null;
     let activeBooster = null;
     let panhandleCooldown = false;
@@ -108,36 +110,64 @@
 
     function updateDialogue(t) { document.getElementById('dialogue').innerText = `"${t}"`; }
 
+    // FORCE SAVE UTILITY
+    function saveAndRefresh() {
+        localStorage.setItem('zeni', zeni);
+        localStorage.setItem('army', JSON.stringify(army));
+        updateUI();
+        updateInventory();
+    }
+
     function syncData() {
-        zeni = parseInt(localStorage.getItem('zeni')) || zeni;
-        army = JSON.parse(localStorage.getItem('army')) || [];
+        // Sync check for multi-tab activity
+        let storedZeni = localStorage.getItem('zeni');
+        if (storedZeni !== null) zeni = parseInt(storedZeni);
+        let storedArmy = localStorage.getItem('army');
+        if (storedArmy !== null) army = JSON.parse(storedArmy);
+        
         updateUI();
         updateInventory();
         loadSmuggledSeeds();
     }
 
+    function liquidate() {
+        if (army.length === 0) { updateDialogue("No army to liquidate."); return; }
+        if (confirm("SELL ENTIRE ARMY? (Bulk price: 60% value)")) {
+            let totalValue = army.reduce((acc, unit) => {
+                let type = roster.find(r => r.name === unit.name);
+                let value = Math.floor(1000 * type.multi * (unit.pl / type.max));
+                return acc + value;
+            }, 0);
+            let finalPayout = Math.floor(totalValue * 0.6);
+            zeni += finalPayout;
+            army = [];
+            updateDialogue(`Sold out. Cleared $${finalPayout.toLocaleString()}.`);
+            saveAndRefresh();
+        }
+    }
+
     function panhandle() {
-        if (zeni >= 500) { updateDialogue("You aren't broke enough to beg. Scram!"); return; }
-        if (panhandleCooldown) { updateDialogue("Locals are out of change. Wait 10s."); return; }
+        if (zeni >= 500) { updateDialogue("You aren't broke enough. Scram!"); return; }
+        if (panhandleCooldown) { updateDialogue("Wait for the crowd to refresh."); return; }
         let gain = Math.floor(Math.random() * 200) + 50;
         zeni += gain;
         panhandleCooldown = true;
-        updateDialogue(`You begged on the corner and got $${gain} Zeni.`);
+        updateDialogue(`Begging got you $${gain}.`);
         setTimeout(() => { panhandleCooldown = false; }, 10000);
-        updateUI();
+        saveAndRefresh();
     }
 
     function huntDragonBalls() {
-        if (zeni < 15000) { updateDialogue("Radar sweep is $15k. No credit."); return; }
+        if (zeni < 15000) { updateDialogue("Radar sweep is $15k."); return; }
         zeni -= 15000;
         if (Math.random() < 0.20 && ballsFound < 7) {
             ballsFound++;
             luckBonus += 15;
-            updateDialogue(`BEEP! Found Ball #${ballsFound}! Permanent Luck Up.`);
+            updateDialogue(`BEEP! Found Ball #${ballsFound}! Luck Up.`);
         } else {
-            updateDialogue("Radar signal was a ghost. You found nothing.");
+            updateDialogue("Radar found a discarded soda can.");
         }
-        updateUI();
+        saveAndRefresh();
     }
 
     function overcharge() {
@@ -145,14 +175,14 @@
         if(Math.random() > 0.45) {
             currentSprout.pl *= 3;
             currentSprout.val *= 2.5;
-            updateDialogue("POWER OVERFLOWING! Triple PL!");
-            document.getElementById('p1').innerHTML += `<br><small style="color:cyan">⚡BOOSTED⚡</small>`;
+            updateDialogue("BOOM! PL Tripled!");
+            document.getElementById('p1').innerHTML += `<br><small style="color:cyan">⚡MAXED⚡</small>`;
         } else {
             currentSprout = null;
             for(let i=0; i<3; i++) document.getElementById('p'+i).innerHTML = "💨";
-            updateDialogue("The machinery exploded. Seed is ash.");
+            updateDialogue("Burned it out.");
         }
-        updateUI();
+        saveAndRefresh();
     }
 
     function loadSmuggledSeeds() {
@@ -203,57 +233,55 @@
             let pl = Math.floor(Math.random() * (type.max - type.min + 1)) + type.min;
             if(activeBooster === 'steroids' && Math.random() < 0.2) {
                 document.getElementById('p'+id).innerHTML = "💥";
-                updateDialogue("Steroid overdose! Explosion!");
                 currentSprout = null;
+                updateDialogue("Steroid overdose!");
             } else {
                 if(activeBooster === 'steroids') pl *= 2;
                 currentSprout = { ...type, pl: pl, val: Math.floor(1000 * type.multi * (pl / type.max)) };
                 document.getElementById('p'+id).innerHTML = `<b style="font-size:2rem">${type.emoji}</b><br><small>PL: ${pl}</small>`;
-                updateDialogue(`Sprouted a ${type.name}! Sell it or Army it?`);
+                updateDialogue(`Batch ${type.name} ready.`);
             }
         } else {
             document.getElementById('p'+id).innerHTML = "💨";
-            updateDialogue("Dud seed.");
             currentSprout = null;
         }
         heat += 5;
         activeBooster = null;
-        updateUI();
+        saveAndRefresh();
     }
 
     function leaseCurrent() {
+        if(!currentSprout) return;
         army.push(currentSprout);
         currentSprout = null;
         for(let i=0; i<3; i++) document.getElementById('p'+i).innerHTML = "🕳️";
-        updateInventory();
-        updateUI();
+        saveAndRefresh();
     }
 
     function sellCurrent() {
+        if(!currentSprout) return;
         zeni += currentSprout.val;
         currentSprout = null;
         for(let i=0; i<3; i++) document.getElementById('p'+i).innerHTML = "🕳️";
-        updateUI();
+        saveAndRefresh();
     }
 
     function startFusion() {
-        if(army.length < 2) { updateDialogue("Need 2 soldiers!"); return; }
+        if(army.length < 2) { updateDialogue("Need 2 for fusion."); return; }
         army.sort((a,b) => a.pl - b.pl);
         let s1 = army.shift(), s2 = army.shift();
         if(Math.random() > 0.4) {
             let newPL = Math.floor((s1.pl + s2.pl) * 0.9);
             army.push({...roster[2], pl: newPL});
-            updateDialogue("Fusion Success!");
-        } else { updateDialogue("Fusion failure. Both died."); }
-        updateInventory();
+            updateDialogue("Hybrid created.");
+        } else { updateDialogue("Fusion failed."); }
+        saveAndRefresh();
     }
 
     function updateInventory() {
         const list = document.getElementById('inventory');
         list.innerHTML = army.map(s => `<div class="inv-item"><span>${s.emoji} ${s.name}</span> <span>${s.pl}</span></div>`).join('');
         document.getElementById('armyPL').innerText = army.reduce((a, b) => a + (b.pl || 0), 0).toLocaleString();
-        localStorage.setItem('army', JSON.stringify(army));
-        localStorage.setItem('zeni', zeni);
     }
 
     function updateUI() {
@@ -267,10 +295,10 @@
         document.getElementById('ballDisplay').innerText = balls;
     }
 
-    function bribe() { if(zeni >= 5000) { zeni -= 5000; heat = 0; updateUI(); updateDialogue("Patrol paid off."); } }
+    function bribe() { if(zeni >= 5000) { zeni -= 5000; heat = 0; saveAndRefresh(); updateDialogue("Patrol paid off."); } }
 
-    setInterval(syncData, 2000);
     syncData();
+    setInterval(syncData, 2000);
 </script>
 </body>
 </html>

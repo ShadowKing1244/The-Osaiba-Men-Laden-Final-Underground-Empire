@@ -2,134 +2,251 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Galactic Network - Black Market</title>
+    <title>Galactic Network - Mercenary Hub</title>
     <style>
-        :root { --neon-blue: #00f2ff; --gold: #ffd700; --bg: #0a0a0c; --blood: #8b0000; }
-        body { background: var(--bg); color: #fff; font-family: 'Courier New', monospace; margin: 0; padding: 20px; display: flex; justify-content: center; }
-        #network-container { width: 850px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        :root { 
+            --neon-blue: #00f2ff; 
+            --gold: #ffd700; 
+            --bg: #050508; 
+            --blood: #ff0000; 
+            --panel: #11111a;
+            --success: #238636;
+        }
+        body { background: var(--bg); color: #fff; font-family: 'Courier New', monospace; margin: 0; padding: 20px; overflow-x: hidden; }
         
-        .box { background: #15151b; border: 2px solid #333; padding: 20px; border-radius: 12px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
-        h2 { color: var(--gold); border-bottom: 1px solid #333; padding-bottom: 10px; margin-top: 0; font-size: 1.1rem; }
+        /* Layout */
+        .hub-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #222; padding-bottom: 10px; margin-bottom: 20px; }
+        .main-layout { display: grid; grid-template-columns: 350px 1fr; gap: 20px; max-width: 1200px; margin: 0 auto; }
 
-        /* Connections */
-        .contact { display: flex; align-items: center; gap: 15px; background: #222; padding: 12px; margin: 10px 0; border-radius: 8px; border-left: 4px solid var(--neon-blue); }
-        .contact-info b { color: var(--neon-blue); font-size: 0.9rem; }
-        .buy-btn { background: #238636; color: white; border: none; padding: 6px 12px; cursor: pointer; border-radius: 4px; font-weight: bold; font-size: 0.7rem; }
+        /* Left Panel: Connections & Intel */
+        .side-panel { display: flex; flex-direction: column; gap: 20px; }
+        .box { background: var(--panel); border: 1px solid #333; padding: 15px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.8); }
+        h2 { color: var(--gold); margin: 0 0 10px 0; font-size: 1rem; text-transform: uppercase; letter-spacing: 2px; }
 
-        /* Mercenary Contracts */
-        .planet-card { background: #000; border: 1px solid #444; padding: 15px; margin: 10px 0; border-radius: 8px; transition: 0.3s; }
-        .planet-card:hover { border-color: var(--gold); }
-        .risk-tag { float: right; font-size: 10px; padding: 2px 6px; border-radius: 3px; font-weight: bold; }
-        .high { background: var(--blood); }
-        .low { background: #238636; }
-
-        .hire-btn { width: 100%; background: var(--neon-blue); color: #000; font-weight: bold; border: none; padding: 10px; margin-top: 10px; cursor: pointer; border-radius: 4px; }
-        .nav-link { display: inline-block; margin-bottom: 20px; color: var(--neon-blue); text-decoration: none; font-weight: bold; }
+        /* Planet Map */
+        .map-container { 
+            background: radial-gradient(circle at center, #1a1a2e 0%, #050508 100%);
+            border: 2px solid #222;
+            border-radius: 12px;
+            position: relative;
+            height: 600px;
+            overflow: hidden;
+            background-image: url('https://www.transparenttextures.com/patterns/stardust.png');
+        }
         
-        #status-msg { height: 40px; color: var(--gold); font-size: 0.8rem; text-align: center; margin-top: 10px; font-style: italic; }
+        .planet-node {
+            position: absolute;
+            cursor: pointer;
+            transition: 0.3s;
+            text-align: center;
+            width: 120px;
+        }
+        .planet-node:hover { transform: scale(1.1); filter: brightness(1.3); }
+        .planet-icon { font-size: 3rem; display: block; filter: drop-shadow(0 0 10px rgba(0,242,255,0.3)); }
+        .planet-name { font-weight: bold; font-size: 0.8rem; display: block; margin-top: 5px; color: var(--neon-blue); text-shadow: 0 0 5px #000; }
+        .control-bar { width: 100%; height: 4px; background: #333; margin-top: 4px; border-radius: 2px; overflow: hidden; }
+        .control-fill { height: 100%; width: 0%; background: var(--success); transition: width 1s ease-in-out; }
+
+        /* Stats & Buttons */
+        .stat-line { display: flex; justify-content: space-between; font-size: 0.75rem; margin-bottom: 5px; color: #aaa; }
+        .stat-val { color: #fff; font-weight: bold; }
+        .deploy-btn { width: 100%; padding: 10px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; text-transform: uppercase; transition: 0.2s; }
+        .btn-blue { background: var(--neon-blue); color: #000; }
+        .btn-blue:hover { background: #fff; box-shadow: 0 0 15px var(--neon-blue); }
+
+        /* Seed Shop Mini */
+        .shop-item { display: flex; align-items: center; gap: 10px; background: #1a1a24; padding: 8px; border-radius: 5px; margin-bottom: 8px; }
+        .buy-mini { background: var(--success); color: #fff; border: none; padding: 4px 8px; font-size: 0.7rem; cursor: pointer; border-radius: 3px; }
+
+        #status-ticker { background: #000; border: 1px solid #444; color: var(--gold); padding: 10px; font-size: 0.8rem; height: 100px; overflow-y: auto; }
+        .msg-casualty { color: var(--blood); }
+        .msg-success { color: var(--success); }
+        
+        /* Navigation */
+        .nav-link { color: var(--neon-blue); text-decoration: none; font-weight: bold; font-size: 0.9rem; }
+        .zeni-tag { color: var(--gold); font-size: 1.2rem; font-weight: bold; text-shadow: 0 0 10px rgba(255,215,0,0.3); }
     </style>
 </head>
 <body>
 
-<div>
-    <a href="index.html" class="nav-link">⬅️ RETURN TO THE PIT</a>
-    <div id="network-container">
+<div class="hub-header">
+    <a href="index.html" class="nav-link">⬅ EXIT TO THE PIT</a>
+    <div style="text-align: center;">
+        <span style="font-size: 0.6rem; color: #666; display: block;">SATELLITE UPLINK ACTIVE</span>
+        <span style="letter-spacing: 5px; font-weight: bold;">MERCENARY CONTROL HUB</span>
+    </div>
+    <div class="zeni-tag">💰 <span id="hub-zeni">0</span></div>
+</div>
+
+<div class="main-layout">
+    
+    <div class="side-panel">
         
         <div class="box">
-            <h2>Underground Connections</h2>
-            <p style="font-size: 0.7rem; color: #888;">Buy discounted seeds to your Galactic Storage.</p>
-            
-            <div class="contact">
-                <span style="font-size: 1.5rem;">👽</span>
-                <div class="contact-info">
-                    <b>Frieza Deserter</b><br>
-                    <small>White Seed (Jinkouman)</small>
-                </div>
-                <button class="buy-btn" onclick="buySeed('Jinkouman', '⚪', 4500)">$4,500</button>
-            </div>
-
-            <div class="contact">
-                <span style="font-size: 1.5rem;">🦎</span>
-                <div class="contact-info">
-                    <b>Namekian Outcast</b><br>
-                    <small>Pink Seed (Tennenman)</small>
-                </div>
-                <button class="buy-btn" onclick="buySeed('Tennenman', '💗', 2200)">$2,200</button>
+            <h2>Underground Intel</h2>
+            <div id="status-ticker">
+                > Initializing Uplink...<br>
+                > Scanning Quadrants...<br>
+                > Welcome, Overlord.
             </div>
         </div>
 
         <div class="box">
-            <h2>Galactic Mercenary Hub</h2>
-            <div id="status-msg">Welcome, Commander.</div>
+            <h2>Territory Rewards</h2>
+            <p style="font-size: 0.7rem; color: #888;">Controlled planets generate passive income every 30s.</p>
+            <div class="stat-line"><span>Income Rate:</span> <span class="stat-val" id="passive-rate">$0</span></div>
+            <button class="deploy-btn btn-blue" onclick="collectPassive()" id="collect-btn" style="display:none;">COLLECT SPOILS</button>
+        </div>
 
-            <div class="planet-card">
-                <span class="risk-tag low">LOW RISK</span>
-                <b>📍 Planet Earth</b><br>
-                <small>RR Army Contract: 10% Death Chance</small>
-                <button class="hire-btn" onclick="deploy('Earth')">DEPLOY STRONGEST ($$$)</button>
+        <div class="box">
+            <h2>Black Market Seeds</h2>
+            <div class="shop-item">
+                <span>⚪</span>
+                <div style="flex:1;"><small>Jinkouman</small><br><b>$4,500</b></div>
+                <button class="buy-mini" onclick="buySeed('Jinkouman','⚪', 4500)">BUY</button>
             </div>
-
-            <div class="planet-card">
-                <span class="risk-tag high">EXTREME RISK</span>
-                <b>📍 Planet Frieza 79</b><br>
-                <small>Elite Raid: 60% Death Chance</small>
-                <button class="hire-btn" onclick="deploy('Frieza79')">DEPLOY STRONGEST ($$$$$)</button>
+            <div class="shop-item">
+                <span>💗</span>
+                <div style="flex:1;"><small>Tennenman</small><br><b>$2,200</b></div>
+                <button class="buy-mini" onclick="buySeed('Tennenman','💗', 2200)">BUY</button>
             </div>
         </div>
 
     </div>
+
+    <div class="map-container" id="star-map">
+        </div>
+
 </div>
 
 <script>
-    function getZeni() { return parseInt(localStorage.getItem('zeni')) || 5000; }
-    function setZeni(val) { localStorage.setItem('zeni', val); }
+    const PLANETS = [
+        { id: 'earth', name: 'Planet Earth', icon: '🌍', x: 200, y: 300, risk: 0.1, reward: 8, control: 0, cost: 0 },
+        { id: 'f79', name: 'Frieza 79', icon: '🛸', x: 500, y: 150, risk: 0.5, reward: 40, control: 0, cost: 5000 },
+        { id: 'namek', name: 'New Namek', icon: '🌑', x: 600, y: 450, risk: 0.3, reward: 20, control: 0, cost: 2000 },
+        { id: 'vegeta', name: 'Planet Vegeta (Ruins)', icon: '☄️', x: 100, y: 100, risk: 0.7, reward: 150, control: 0, cost: 15000 }
+    ];
+
+    let currentZeni = parseInt(localStorage.getItem('zeni')) || 5000;
+    let controlState = JSON.parse(localStorage.getItem('planetControl')) || { earth: 0, f79: 0, namek: 0, vegeta: 0 };
+    let pendingIncome = 0;
+
+    function init() {
+        updateZeniUI();
+        renderMap();
+        setInterval(processPassiveIncome, 30000);
+    }
+
+    function renderMap() {
+        const map = document.getElementById('star-map');
+        map.innerHTML = '';
+        PLANETS.forEach(p => {
+            const div = document.createElement('div');
+            div.className = 'planet-node';
+            div.style.left = p.x + 'px';
+            div.style.top = p.y + 'px';
+            
+            const controlLevel = controlState[p.id] || 0;
+            
+            div.innerHTML = `
+                <span class="planet-icon">${p.icon}</span>
+                <span class="planet-name">${p.name}</span>
+                <div class="control-bar"><div class="control-fill" style="width: ${controlLevel}%"></div></div>
+                <div style="font-size:0.6rem; color:#888; margin-top:5px;">
+                    Risk: ${(p.risk*100).toFixed(0)}% | Multi: x${p.reward}
+                </div>
+                <button class="deploy-btn btn-blue" style="font-size:0.6rem; margin-top:5px;" onclick="deployTo('${p.id}')">
+                    DEPLOY UNIT
+                </button>
+            `;
+            map.appendChild(div);
+        });
+    }
+
+    function log(msg, type='') {
+        const ticker = document.getElementById('status-ticker');
+        const span = document.createElement('div');
+        span.className = type ? 'msg-' + type : '';
+        span.innerHTML = `> ${msg}`;
+        ticker.prepend(span);
+    }
+
+    function updateZeniUI() {
+        document.getElementById('hub-zeni').innerText = currentZeni.toLocaleString();
+        localStorage.setItem('zeni', currentZeni);
+        
+        // Update Passive Rate display
+        let totalRate = 0;
+        PLANETS.forEach(p => {
+            totalRate += (controlState[p.id] || 0) * 10; // $10 per 1% control per 30s
+        });
+        document.getElementById('passive-rate').innerText = `$${totalRate}/cycle`;
+    }
 
     function buySeed(name, emoji, price) {
-        let currentZeni = getZeni();
-        if(currentZeni < price) {
-            updateStatus("Not enough Zeni for this connection!");
-            return;
-        }
-        
-        setZeni(currentZeni - price);
+        if(currentZeni < price) { return log("NOT ENOUGH ZENI", "casualty"); }
+        currentZeni -= price;
         let storage = JSON.parse(localStorage.getItem('seedStorage')) || [];
         storage.push({ name, emoji });
         localStorage.setItem('seedStorage', JSON.stringify(storage));
-        
-        updateStatus(`Smuggled ${name} seed to Galactic Storage!`);
+        updateZeniUI();
+        log(`Purchased ${name} seed.`, "success");
     }
 
-    function deploy(planet) {
+    function deployTo(planetId) {
         let army = JSON.parse(localStorage.getItem('army')) || [];
-        if(army.length === 0) {
-            updateStatus("No Saibamen in your army to hire out!");
-            return;
-        }
+        if(army.length === 0) return log("NO UNITS IN PIT!", "casualty");
 
-        // Target the strongest soldier
         army.sort((a,b) => b.pl - a.pl);
         let soldier = army[0];
-        
-        let deathChance = (planet === 'Earth') ? 0.1 : 0.6;
-        let payMultiplier = (planet === 'Earth') ? 8 : 45;
+        const pData = PLANETS.find(p => p.id === planetId);
 
-        updateStatus(`Deploying ${soldier.name} (PL ${soldier.pl}) to ${planet}...`);
+        log(`Deploying ${soldier.name} (PL ${soldier.pl}) to ${pData.name}...`);
 
         setTimeout(() => {
-            if(Math.random() > deathChance) {
-                let payout = Math.floor(soldier.pl * payMultiplier);
-                let currentZeni = getZeni();
-                setZeni(currentZeni + payout);
-                updateStatus(`SUCCESS! ${soldier.name} returned with $${payout.toLocaleString()}!`);
+            if(Math.random() > pData.risk) {
+                // SUCCESS
+                let payout = Math.floor(soldier.pl * pData.reward);
+                currentZeni += payout;
+                
+                // Increase Territory Control
+                controlState[planetId] = Math.min(100, (controlState[planetId] || 0) + 10);
+                localStorage.setItem('planetControl', JSON.stringify(controlState));
+                
+                log(`${soldier.name} secured sector! Payout: $${payout.toLocaleString()}`, "success");
+                renderMap();
             } else {
-                army.shift(); // Remove dead soldier
+                // LOSS
+                army.shift();
                 localStorage.setItem('army', JSON.stringify(army));
-                updateStatus(`CASUALTY! ${soldier.name} was wiped out on ${planet}.`);
+                log(`LOST CONTACT with ${soldier.name} on ${pData.name}.`, "casualty");
             }
-        }, 2000);
+            updateZeniUI();
+        }, 1500);
     }
 
-    function updateStatus(msg) { document.getElementById('status-msg').innerText = msg; }
+    function processPassiveIncome() {
+        let cycleTotal = 0;
+        PLANETS.forEach(p => {
+            cycleTotal += (controlState[p.id] || 0) * 10;
+        });
+        if(cycleTotal > 0) {
+            pendingIncome += cycleTotal;
+            document.getElementById('collect-btn').style.display = 'block';
+            document.getElementById('collect-btn').innerText = `COLLECT $${pendingIncome}`;
+            log(`Satellite report: Spoils ready for pickup.`);
+        }
+    }
+
+    function collectPassive() {
+        currentZeni += pendingIncome;
+        log(`Collected $${pendingIncome} from occupied territories.`, "success");
+        pendingIncome = 0;
+        document.getElementById('collect-btn').style.display = 'none';
+        updateZeniUI();
+    }
+
+    init();
 </script>
 </body>
 </html>
