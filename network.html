@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Galactic Network - Black Market</title>
+    <style>
+        :root { --neon-blue: #00f2ff; --gold: #ffd700; --bg: #0a0a0c; --blood: #8b0000; }
+        body { background: var(--bg); color: #fff; font-family: 'Courier New', monospace; margin: 0; padding: 20px; display: flex; justify-content: center; }
+        #network-container { width: 850px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        
+        .box { background: #15151b; border: 2px solid #333; padding: 20px; border-radius: 12px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+        h2 { color: var(--gold); border-bottom: 1px solid #333; padding-bottom: 10px; margin-top: 0; font-size: 1.1rem; }
+
+        /* Connections */
+        .contact { display: flex; align-items: center; gap: 15px; background: #222; padding: 12px; margin: 10px 0; border-radius: 8px; border-left: 4px solid var(--neon-blue); }
+        .contact-info b { color: var(--neon-blue); font-size: 0.9rem; }
+        .buy-btn { background: #238636; color: white; border: none; padding: 6px 12px; cursor: pointer; border-radius: 4px; font-weight: bold; font-size: 0.7rem; }
+
+        /* Mercenary Contracts */
+        .planet-card { background: #000; border: 1px solid #444; padding: 15px; margin: 10px 0; border-radius: 8px; transition: 0.3s; }
+        .planet-card:hover { border-color: var(--gold); }
+        .risk-tag { float: right; font-size: 10px; padding: 2px 6px; border-radius: 3px; font-weight: bold; }
+        .high { background: var(--blood); }
+        .low { background: #238636; }
+
+        .hire-btn { width: 100%; background: var(--neon-blue); color: #000; font-weight: bold; border: none; padding: 10px; margin-top: 10px; cursor: pointer; border-radius: 4px; }
+        .nav-link { display: inline-block; margin-bottom: 20px; color: var(--neon-blue); text-decoration: none; font-weight: bold; }
+        
+        #status-msg { height: 40px; color: var(--gold); font-size: 0.8rem; text-align: center; margin-top: 10px; font-style: italic; }
+    </style>
+</head>
+<body>
+
+<div>
+    <a href="index.html" class="nav-link">⬅️ RETURN TO THE PIT</a>
+    <div id="network-container">
+        
+        <div class="box">
+            <h2>Underground Connections</h2>
+            <p style="font-size: 0.7rem; color: #888;">Buy discounted seeds to your Galactic Storage.</p>
+            
+            <div class="contact">
+                <span style="font-size: 1.5rem;">👽</span>
+                <div class="contact-info">
+                    <b>Frieza Deserter</b><br>
+                    <small>White Seed (Jinkouman)</small>
+                </div>
+                <button class="buy-btn" onclick="buySeed('Jinkouman', '⚪', 4500)">$4,500</button>
+            </div>
+
+            <div class="contact">
+                <span style="font-size: 1.5rem;">🦎</span>
+                <div class="contact-info">
+                    <b>Namekian Outcast</b><br>
+                    <small>Pink Seed (Tennenman)</small>
+                </div>
+                <button class="buy-btn" onclick="buySeed('Tennenman', '💗', 2200)">$2,200</button>
+            </div>
+        </div>
+
+        <div class="box">
+            <h2>Galactic Mercenary Hub</h2>
+            <div id="status-msg">Welcome, Commander.</div>
+
+            <div class="planet-card">
+                <span class="risk-tag low">LOW RISK</span>
+                <b>📍 Planet Earth</b><br>
+                <small>RR Army Contract: 10% Death Chance</small>
+                <button class="hire-btn" onclick="deploy('Earth')">DEPLOY STRONGEST ($$$)</button>
+            </div>
+
+            <div class="planet-card">
+                <span class="risk-tag high">EXTREME RISK</span>
+                <b>📍 Planet Frieza 79</b><br>
+                <small>Elite Raid: 60% Death Chance</small>
+                <button class="hire-btn" onclick="deploy('Frieza79')">DEPLOY STRONGEST ($$$$$)</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    function getZeni() { return parseInt(localStorage.getItem('zeni')) || 5000; }
+    function setZeni(val) { localStorage.setItem('zeni', val); }
+
+    function buySeed(name, emoji, price) {
+        let currentZeni = getZeni();
+        if(currentZeni < price) {
+            updateStatus("Not enough Zeni for this connection!");
+            return;
+        }
+        
+        setZeni(currentZeni - price);
+        let storage = JSON.parse(localStorage.getItem('seedStorage')) || [];
+        storage.push({ name, emoji });
+        localStorage.setItem('seedStorage', JSON.stringify(storage));
+        
+        updateStatus(`Smuggled ${name} seed to Galactic Storage!`);
+    }
+
+    function deploy(planet) {
+        let army = JSON.parse(localStorage.getItem('army')) || [];
+        if(army.length === 0) {
+            updateStatus("No Saibamen in your army to hire out!");
+            return;
+        }
+
+        // Target the strongest soldier
+        army.sort((a,b) => b.pl - a.pl);
+        let soldier = army[0];
+        
+        let deathChance = (planet === 'Earth') ? 0.1 : 0.6;
+        let payMultiplier = (planet === 'Earth') ? 8 : 45;
+
+        updateStatus(`Deploying ${soldier.name} (PL ${soldier.pl}) to ${planet}...`);
+
+        setTimeout(() => {
+            if(Math.random() > deathChance) {
+                let payout = Math.floor(soldier.pl * payMultiplier);
+                let currentZeni = getZeni();
+                setZeni(currentZeni + payout);
+                updateStatus(`SUCCESS! ${soldier.name} returned with $${payout.toLocaleString()}!`);
+            } else {
+                army.shift(); // Remove dead soldier
+                localStorage.setItem('army', JSON.stringify(army));
+                updateStatus(`CASUALTY! ${soldier.name} was wiped out on ${planet}.`);
+            }
+        }, 2000);
+    }
+
+    function updateStatus(msg) { document.getElementById('status-msg').innerText = msg; }
+</script>
+</body>
+</html>

@@ -1,61 +1,61 @@
-.html<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Osaiba's Underground Empire</title>
     <style>
-        :root { --orange: #ff8c00; --green: #39ff14; --red: #ff3131; --blue: #00d4ff; --gray: #888; }
-        body { background: #050505; color: #eee; font-family: 'Courier New', monospace; margin: 0; display: flex; justify-content: center; overflow-x: hidden; }
-        #game-container { width: 800px; background: #111; border: 4px solid #333; padding: 20px; display: grid; grid-template-columns: 1fr 250px; gap: 20px; }
+        :root { --orange: #ff8c00; --green: #39ff14; --red: #ff3131; --blue: #00d4ff; --purple: #bc13fe; }
+        body { background: #050505; color: #eee; font-family: 'Courier New', monospace; margin: 0; display: flex; flex-direction: column; align-items: center; }
         
-        /* Stats & Heat */
+        .nav-bar { width: 100%; background: #1a1a1a; padding: 10px; text-align: center; border-bottom: 2px solid #333; }
+        .nav-bar a { color: var(--blue); text-decoration: none; font-weight: bold; font-size: 1rem; border: 1px solid var(--blue); padding: 5px 15px; border-radius: 5px; }
+
+        #game-container { width: 850px; background: #111; border: 4px solid #333; padding: 20px; display: grid; grid-template-columns: 1fr 280px; gap: 20px; margin-top: 10px; }
+        
         .header { grid-column: 1 / span 2; border-bottom: 2px solid #333; padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-        .heat-container { width: 200px; height: 15px; background: #222; border: 1px solid #444; position: relative; }
+        .heat-container { width: 180px; height: 12px; background: #222; border: 1px solid #444; position: relative; }
         #heat-bar { height: 100%; width: 0%; background: linear-gradient(to right, yellow, red); transition: 0.3s; }
         
-        /* Dealer & Dialogue */
-        .dealer-section { background: #1a1a1a; padding: 15px; border-radius: 5px; margin-bottom: 20px; border-left: 5px solid var(--orange); }
+        .dealer-section { background: #1a1a1a; padding: 15px; border-radius: 5px; margin-bottom: 15px; border-left: 5px solid var(--orange); grid-column: 1 / span 1; }
+        .storage-section { background: #1a1510; border: 1px dashed var(--orange); padding: 10px; margin-bottom: 15px; border-radius: 5px; }
         
-        /* Main Pit */
         .plot-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px; }
-        .plot { height: 140px; background: #221a10; border: 2px solid #444; border-radius: 8px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.1s; position: relative; }
+        .plot { height: 140px; background: #221a10; border: 2px solid #444; border-radius: 8px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
         .plot:hover { border-color: var(--orange); }
-        .active-label { position: absolute; top: 5px; font-size: 10px; color: var(--green); }
 
-        /* Sidebar: Inventory & Lab */
         .sidebar { background: #000; padding: 15px; border-left: 1px solid #333; font-size: 0.8rem; }
-        .inventory-list { height: 200px; overflow-y: auto; border: 1px solid #222; margin: 10px 0; padding: 5px; }
-        .inv-item { padding: 5px; border-bottom: 1px solid #222; cursor: pointer; display: flex; justify-content: space-between; }
-        .inv-item:hover { background: #111; color: var(--green); }
+        .inventory-list { height: 250px; overflow-y: auto; border: 1px solid #222; margin: 10px 0; padding: 5px; }
+        .inv-item { padding: 5px; border-bottom: 1px solid #222; display: flex; justify-content: space-between; }
 
-        /* Buttons */
-        .btn { width: 100%; padding: 10px; margin: 5px 0; border: none; cursor: pointer; font-weight: bold; text-transform: uppercase; font-size: 0.7rem; }
-        .btn-gamble { background: var(--orange); color: #fff; }
+        .btn { width: 100%; padding: 10px; margin: 5px 0; border: none; cursor: pointer; font-weight: bold; text-transform: uppercase; font-size: 0.7rem; border-radius: 4px; }
         .btn-boost { background: #222; color: #888; border: 1px solid #444; }
         .btn-boost.active { color: var(--green); border-color: var(--green); }
         .btn-danger { background: var(--red); color: white; }
         .btn-special { background: var(--blue); color: white; }
-
-        .fusing { animation: shake 0.2s infinite; border-color: purple !important; }
-        @keyframes shake { 0% { transform: translate(1px, 1px); } 20% { transform: translate(-1px, -1px); } 100% { transform: translate(1px, -1px); } }
     </style>
 </head>
 <body>
 
+<div class="nav-bar">
+    <a href="network.html">🛰️ ACCESS GALACTIC NETWORK</a>
+</div>
+
 <div id="game-container">
     <div class="header">
-        <div>ZENI: <span id="zeni" style="color: gold;">5,000</span></div>
-        <div>
-            <small style="color: var(--red);">GALACTIC HEAT</small>
-            <div class="heat-container"><div id="heat-bar"></div></div>
-        </div>
-        <div>ARMY PL: <span id="armyPL" style="color: var(--blue);">0</span></div>
+        <div>💰 ZENI: <span id="zeni" style="color: gold;">5,000</span></div>
+        <div id="ballDisplay" style="font-size: 1.2rem; color: #ff4500;">⚪⚪⚪⚪⚪⚪⚪</div>
+        <div><small style="color: var(--red);">HEAT</small><div class="heat-container"><div id="heat-bar"></div></div></div>
     </div>
 
     <div class="main-game">
         <div class="dealer-section">
             <span style="color: var(--orange); font-weight: bold;">OSAIBA MEN LADEN:</span>
-            <div id="dialogue" style="font-size: 0.8rem; font-style: italic;">"You want a legacy, or a quick buck? My lab is open for the right price."</div>
+            <div id="dialogue" style="font-size: 0.8rem; font-style: italic;">"You want a legacy, or a quick buck? My lab is open."</div>
+        </div>
+
+        <div class="storage-section">
+            <span style="color: var(--orange); font-weight: bold; font-size: 0.8rem;">📦 GALACTIC STORAGE</span>
+            <div id="seed-list"><small>Check the Network to buy seeds.</small></div>
         </div>
 
         <div class="plot-grid">
@@ -69,26 +69,34 @@
             <button class="btn btn-boost" onclick="toggleBooster('mutant')" id="boost-mutant">Blue Blood ($5k)</button>
         </div>
         
-        <button class="btn btn-special" onclick="overcharge()" id="overchargeBtn" disabled>OVERCHARGE (50/50 - 3X OR ASH)</button>
-        <button class="btn btn-danger" onclick="sellCurrent()" id="sellBtn" disabled>QUICK SELL FOR ZENI</button>
-        <button class="btn btn-special" onclick="leaseCurrent()" id="leaseBtn" disabled>LEASE TO ARMY (PASSIVE INCOME)</button>
+        <button class="btn btn-special" onclick="overcharge()" id="overchargeBtn" disabled>⚡ OVERCHARGE (3X OR ASH)</button>
+        <button class="btn btn-special" style="background: #e67e22;" onclick="huntDragonBalls()">🛰️ RADAR SWEEP ($15,000)</button>
+        <button class="btn btn-boost" onclick="panhandle()" style="color: #eee; border-color: #555;">🤲 PANHANDLE (When Broke)</button>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+            <button class="btn btn-danger" onclick="sellCurrent()" id="sellBtn" disabled>💵 QUICK SELL</button>
+            <button class="btn btn-special" style="background:var(--purple)" onclick="leaseCurrent()" id="leaseBtn" disabled>💂 ADD TO ARMY</button>
+        </div>
     </div>
 
     <div class="sidebar">
-        <span class="market-title">ARMY INVENTORY</span>
+        <span style="color: var(--blue); font-weight: bold;">ARMY COMMAND</span>
         <div class="inventory-list" id="inventory"></div>
-        <button class="btn btn-special" onclick="startFusion()" id="fusionBtn">FUSE 2 WEAKEST (60% SUCCESS)</button>
-        <button class="btn btn-danger" style="margin-top: 20px;" onclick="bribe()">BRIBE POLICE ($5,000)</button>
-        <div style="font-size: 9px; color: #666; margin-top: 10px;">* Army generates Zeni every 5s but can self-destruct.</div>
+        <div style="margin-bottom: 10px;">ARMY PL: <span id="armyPL" style="color: var(--blue);">0</span></div>
+        <button class="btn btn-special" onclick="startFusion()">🧬 FUSE WEAKEST</button>
+        <button class="btn btn-danger" style="margin-top: 20px;" onclick="bribe()">👮 BRIBE ($5,000)</button>
     </div>
 </div>
 
 <script>
-    let zeni = 5000;
+    let zeni = parseInt(localStorage.getItem('zeni')) || 5000;
     let heat = 0;
-    let army = [];
+    let ballsFound = 0;
+    let luckBonus = 0;
+    let army = JSON.parse(localStorage.getItem('army')) || [];
     let currentSprout = null;
     let activeBooster = null;
+    let panhandleCooldown = false;
 
     const roster = [
         { name: "Kaiwareman", emoji: "🔵", chance: 30, min: 238, max: 938, multi: 0.8 },
@@ -98,83 +106,127 @@
         { name: "Jinkouman", emoji: "⚪", chance: 10, min: 2000, max: 2400, multi: 7.0 }
     ];
 
-    function toggleBooster(type) {
-        activeBooster = (activeBooster === type) ? null : type;
-        document.querySelectorAll('.btn-boost').forEach(b => b.classList.remove('active'));
-        if(activeBooster) {
-            document.getElementById('boost-' + type).classList.add('active');
-            heat += 15;
-        }
+    function updateDialogue(t) { document.getElementById('dialogue').innerText = `"${t}"`; }
+
+    function syncData() {
+        zeni = parseInt(localStorage.getItem('zeni')) || zeni;
+        army = JSON.parse(localStorage.getItem('army')) || [];
+        updateUI();
+        updateInventory();
+        loadSmuggledSeeds();
+    }
+
+    function panhandle() {
+        if (zeni >= 500) { updateDialogue("You aren't broke enough to beg. Scram!"); return; }
+        if (panhandleCooldown) { updateDialogue("Locals are out of change. Wait 10s."); return; }
+        let gain = Math.floor(Math.random() * 200) + 50;
+        zeni += gain;
+        panhandleCooldown = true;
+        updateDialogue(`You begged on the corner and got $${gain} Zeni.`);
+        setTimeout(() => { panhandleCooldown = false; }, 10000);
         updateUI();
     }
 
-    function gamble(id) {
-        if (zeni < 1000) { updateDialogue("Too poor!"); return; }
-        if (activeBooster === 'steroids' && zeni < 4000) { updateDialogue("Can't afford steroids!"); return; }
-        
-        zeni -= 1000;
-        if(activeBooster === 'steroids') zeni -= 3000;
-        if(activeBooster === 'mutant') zeni -= 5000;
-
-        for(let i=0; i<3; i++) document.getElementById('p'+i).innerHTML = "🕳️";
-
-        if (Math.random() > 0.4) {
-            let roll = Math.random() * 100;
-            if(activeBooster === 'mutant') roll = Math.min(100, roll + 40);
-            
-            let acc = 0;
-            let type = roster[0];
-            for (let s of roster) { acc += s.chance; if (roll <= acc) { type = s; break; } }
-
-            let pl = Math.floor(Math.random() * (type.max - type.min + 1)) + type.min;
-            if(activeBooster === 'steroids') {
-                if(Math.random() < 0.2) { 
-                    document.getElementById('p'+id).innerHTML = "💥";
-                    updateDialogue("EXPLOSION! Steroids were too pure.");
-                    currentSprout = null;
-                } else { pl *= 2; }
-            }
-
-            if(pl) {
-                let val = Math.floor(1000 * type.multi * (pl / type.max));
-                currentSprout = { ...type, pl: pl, val: val };
-                document.getElementById('p'+id).innerHTML = `<b>${type.emoji}</b><br><small>PL: ${pl}</small><br><small>$${val}</small>`;
-                updateDialogue(`Sprouted a ${type.name}! Sell it or Lease it?`);
-            }
+    function huntDragonBalls() {
+        if (zeni < 15000) { updateDialogue("Radar sweep is $15k. No credit."); return; }
+        zeni -= 15000;
+        if (Math.random() < 0.20 && ballsFound < 7) {
+            ballsFound++;
+            luckBonus += 15;
+            updateDialogue(`BEEP! Found Ball #${ballsFound}! Permanent Luck Up.`);
         } else {
-            document.getElementById('p'+id).innerHTML = "💨";
-            currentSprout = null;
-            updateDialogue("Nothing but dust.");
+            updateDialogue("Radar signal was a ghost. You found nothing.");
         }
-        
-        activeBooster = null;
-        document.querySelectorAll('.btn-boost').forEach(b => b.classList.remove('active'));
-        heat += 5;
-        checkPolice();
         updateUI();
     }
 
     function overcharge() {
         if(!currentSprout) return;
-        if(Math.random() > 0.5) {
-            currentSprout.val *= 3;
+        if(Math.random() > 0.45) {
             currentSprout.pl *= 3;
-            updateDialogue("ZAP! TRIPLE POWER!");
+            currentSprout.val *= 2.5;
+            updateDialogue("POWER OVERFLOWING! Triple PL!");
+            document.getElementById('p1').innerHTML += `<br><small style="color:cyan">⚡BOOSTED⚡</small>`;
         } else {
             currentSprout = null;
-            updateDialogue("CRISPED! Your seed is ash.");
-            for(let i=0; i<3; i++) document.getElementById('p'+i).innerHTML = "🕳️";
+            for(let i=0; i<3; i++) document.getElementById('p'+i).innerHTML = "💨";
+            updateDialogue("The machinery exploded. Seed is ash.");
         }
+        updateUI();
+    }
+
+    function loadSmuggledSeeds() {
+        let storage = JSON.parse(localStorage.getItem('seedStorage')) || [];
+        const container = document.getElementById('seed-list');
+        container.innerHTML = storage.length === 0 ? "<small>Empty</small>" : "";
+        storage.forEach((seed, index) => {
+            let btn = document.createElement('button');
+            btn.className = "btn btn-boost";
+            btn.style.width = "auto";
+            btn.innerHTML = `${seed.emoji} Smuggled ${seed.name}`;
+            btn.onclick = () => {
+                storage.splice(index, 1);
+                localStorage.setItem('seedStorage', JSON.stringify(storage));
+                plantSeed(seed.name);
+            };
+            container.appendChild(btn);
+        });
+    }
+
+    function plantSeed(seedName) {
+        let type = roster.find(r => r.name === seedName);
+        let pl = Math.floor(Math.random() * (type.max - type.min + 1)) + type.min;
+        currentSprout = { ...type, pl: pl, val: Math.floor(1000 * type.multi * (pl / type.max)) };
+        document.getElementById('p1').innerHTML = `<b style="font-size:2rem">${type.emoji}</b><br><small>PL: ${pl}</small>`;
+        updateUI();
+    }
+
+    function toggleBooster(type) {
+        activeBooster = (activeBooster === type) ? null : type;
+        document.querySelectorAll('.btn-boost').forEach(b => b.classList.remove('active'));
+        if(activeBooster) document.getElementById('boost-' + type).classList.add('active');
+    }
+
+    function gamble(id) {
+        if (zeni < 1000) { updateDialogue("Too poor!"); return; }
+        zeni -= 1000;
+        if(activeBooster === 'steroids') zeni -= 3000;
+        if(activeBooster === 'mutant') zeni -= 5000;
+        for(let i=0; i<3; i++) document.getElementById('p'+i).innerHTML = "🕳️";
+        
+        if (Math.random() > 0.4) {
+            let roll = (Math.random() * 100) + luckBonus;
+            if(activeBooster === 'mutant') roll += 30;
+            let acc = 0, type = roster[0];
+            for (let s of roster) { acc += s.chance; if (roll <= acc) { type = s; break; } }
+            
+            let pl = Math.floor(Math.random() * (type.max - type.min + 1)) + type.min;
+            if(activeBooster === 'steroids' && Math.random() < 0.2) {
+                document.getElementById('p'+id).innerHTML = "💥";
+                updateDialogue("Steroid overdose! Explosion!");
+                currentSprout = null;
+            } else {
+                if(activeBooster === 'steroids') pl *= 2;
+                currentSprout = { ...type, pl: pl, val: Math.floor(1000 * type.multi * (pl / type.max)) };
+                document.getElementById('p'+id).innerHTML = `<b style="font-size:2rem">${type.emoji}</b><br><small>PL: ${pl}</small>`;
+                updateDialogue(`Sprouted a ${type.name}! Sell it or Army it?`);
+            }
+        } else {
+            document.getElementById('p'+id).innerHTML = "💨";
+            updateDialogue("Dud seed.");
+            currentSprout = null;
+        }
+        heat += 5;
+        activeBooster = null;
         updateUI();
     }
 
     function leaseCurrent() {
         army.push(currentSprout);
-        updateDialogue("He's in the army now. You'll get passive Zeni.");
         currentSprout = null;
         for(let i=0; i<3; i++) document.getElementById('p'+i).innerHTML = "🕳️";
-        updateUI();
         updateInventory();
+        updateUI();
     }
 
     function sellCurrent() {
@@ -184,74 +236,41 @@
         updateUI();
     }
 
-    function bribe() {
-        if(zeni >= 5000) { zeni -= 5000; heat = 0; updateDialogue("Police looked the other way."); }
-        updateUI();
+    function startFusion() {
+        if(army.length < 2) { updateDialogue("Need 2 soldiers!"); return; }
+        army.sort((a,b) => a.pl - b.pl);
+        let s1 = army.shift(), s2 = army.shift();
+        if(Math.random() > 0.4) {
+            let newPL = Math.floor((s1.pl + s2.pl) * 0.9);
+            army.push({...roster[2], pl: newPL});
+            updateDialogue("Fusion Success!");
+        } else { updateDialogue("Fusion failure. Both died."); }
+        updateInventory();
     }
-
-    function checkPolice() {
-        if(heat >= 100) {
-            zeni = Math.floor(zeni / 2);
-            heat = 0;
-            updateDialogue("POLICE RAID! They took half your Zeni!");
-        }
-    }
-
-    // Passive Income Loop
-    setInterval(() => {
-        if(army.length > 0) {
-            let earnings = 0;
-            army = army.filter(s => {
-                if(Math.random() < 0.05) return false; // 5% chance to explode
-                earnings += Math.floor(s.pl / 10);
-                return true;
-            });
-            zeni += earnings;
-            updateUI();
-            updateInventory();
-        }
-    }, 5000);
 
     function updateInventory() {
         const list = document.getElementById('inventory');
-        list.innerHTML = army.map(s => `<div class="inv-item"><span>${s.emoji} ${s.name}</span> <span>PL: ${s.pl}</span></div>`).join('');
-        document.getElementById('armyPL').innerText = army.reduce((a, b) => a + b.pl, 0);
-    }
-
-    function startFusion() {
-        if(army.length < 2) { updateDialogue("Need 2 in army to fuse!"); return; }
-        army.sort((a,b) => a.pl - b.pl);
-        let s1 = army.shift();
-        let s2 = army.shift();
-        
-        updateDialogue("FUSING...");
-        setTimeout(() => {
-            if(Math.random() > 0.4) {
-                let nextTierIndex = roster.findIndex(r => r.name === s1.name) + 1;
-                if(nextTierIndex >= roster.length) nextTierIndex = roster.length - 1;
-                let newType = roster[nextTierIndex];
-                let newPL = Math.floor((s1.pl + s2.pl) * 0.8);
-                army.push({...newType, pl: newPL});
-                updateDialogue("SUCCESS! Created a " + newType.name);
-            } else {
-                updateDialogue("FUSION FAILED! Both died.");
-            }
-            updateInventory();
-            updateUI();
-        }, 1000);
+        list.innerHTML = army.map(s => `<div class="inv-item"><span>${s.emoji} ${s.name}</span> <span>${s.pl}</span></div>`).join('');
+        document.getElementById('armyPL').innerText = army.reduce((a, b) => a + (b.pl || 0), 0).toLocaleString();
+        localStorage.setItem('army', JSON.stringify(army));
+        localStorage.setItem('zeni', zeni);
     }
 
     function updateUI() {
         document.getElementById('zeni').innerText = zeni.toLocaleString();
-        document.getElementById('heat-bar').style.width = heat + "%";
+        document.getElementById('heat-bar').style.width = Math.min(heat, 100) + "%";
         document.getElementById('sellBtn').disabled = !currentSprout;
         document.getElementById('leaseBtn').disabled = !currentSprout;
         document.getElementById('overchargeBtn').disabled = !currentSprout;
+        let balls = "";
+        for(let i=0; i<7; i++) balls += (i < ballsFound) ? "🟠" : "⚪";
+        document.getElementById('ballDisplay').innerText = balls;
     }
 
-    function updateDialogue(t) { document.getElementById('dialogue').innerText = `"${t}"`; }
-    updateUI();
-</script>
+    function bribe() { if(zeni >= 5000) { zeni -= 5000; heat = 0; updateUI(); updateDialogue("Patrol paid off."); } }
 
+    setInterval(syncData, 2000);
+    syncData();
+</script>
 </body>
 </html>
